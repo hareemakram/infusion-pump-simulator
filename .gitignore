@@ -1,0 +1,17 @@
+build/
+build-*/
+__pycache__/
+*.pyc
+.pytest_cache/
+.coverage
+coverage.xml
+htmlcov/
+reports/
+node_modules/
+ui/dist/
+ui/test-results/
+ui/playwright-report/
+ui/coverage/
+*.egg-info/
+.venv/
+.DS_Store

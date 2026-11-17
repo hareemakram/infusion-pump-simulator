@@ -1,0 +1,33 @@
+[project]
+name = "pumpsim"
+version = "1.0.0"
+description = "Hardware simulator, fault injector and service for the infusion pump firmware"
+requires-python = ">=3.10"
+readme = "README.md"
+license = { text = "MIT" }
+dependencies = []
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "pytest-cov>=5", "gcovr>=7"]
+
+[project.scripts]
+pumpsim = "pumpsim.__main__:main"
+
+[tool.setuptools.packages.find]
+where = ["simulator"]
+
+[tool.pytest.ini_options]
+testpaths = ["simulator/tests"]
+pythonpath = ["simulator"]
+addopts = "-ra --strict-markers"
+markers = [
+  "req(*ids): links a test to software requirements (SRS-xxx) for the traceability matrix",
+  "system: closed-loop test against the real firmware binary",
+]
+
+[tool.coverage.run]
+source = ["pumpsim"]
+omit = ["*/__main__.py"]
+
+[tool.coverage.report]
+exclude_lines = ["pragma: no cover", "if __name__ == .__main__.:"]
