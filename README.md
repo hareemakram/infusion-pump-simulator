@@ -10,7 +10,7 @@ interface. Everything is tested automatically, and the documentation follows **I
 
 ![Touchscreen and test bench during an infusion](docs/img/overview.png)
 
-> Simulator for education and demonstration. Not a medical device, and the drug library values are illustrative.
+> **Educational portfolio project. Not a medical device and not certified; it follows IEC 62304 / ISO 14971 practices for demonstration only.** Drug library values are illustrative.
 
 ## What it does
 
