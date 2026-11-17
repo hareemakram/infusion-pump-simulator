@@ -1,0 +1,119 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ci-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  verify:
+    name: Build, test, trace
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install toolchain
+        run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ninja-build libgtest-dev
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+      - run: pip install pytest pytest-cov gcovr
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+          cache-dependency-path: ui/package-lock.json
+
+      # --- C++ firmware ------------------------------------------------------
+      - name: Configure and build firmware (coverage instrumented)
+        run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DPUMP_COVERAGE=ON
+          cmake --build build
+      - name: GoogleTest
+        run: |
+          mkdir -p reports
+          ./build/firmware/pump_tests --gtest_output=xml:reports/gtest.xml
+
+      # --- Python simulator + closed-loop system tests -----------------------
+      - name: pytest (unit + closed-loop against the firmware)
+        run: python -m pytest --junitxml=reports/pytest.xml --cov=pumpsim --cov-report=term --cov-report=xml:reports/python-coverage.xml
+      - name: Fault response scenarios
+        run: PYTHONPATH=simulator python -m pumpsim scenarios --markdown docs/generated/fault-response-report.md
+      - name: Firmware coverage
+        run: gcovr -r . --filter firmware/src --filter firmware/include --print-summary --xml reports/firmware-coverage.xml
+
+      # --- Touchscreen UI -----------------------------------------------------
+      - name: Install UI dependencies
+        working-directory: ui
+        run: npm ci
+      - name: Type check
+        working-directory: ui
+        run: npm run typecheck
+      - name: Jest
+        working-directory: ui
+        run: npx jest --coverage
+      - name: Build UI
+        working-directory: ui
+        run: npm run build
+      - name: Playwright
+        working-directory: ui
+        run: |
+          npx playwright install --with-deps chromium
+          npx playwright test
+
+      # --- Traceability ------------------------------------------------------
+      - name: Traceability matrix (fails if any requirement is unverified)
+        run: python tools/trace.py --strict
+      - name: Job summary
+        if: always()
+        run: |
+          cat docs/generated/test-report.md >> "$GITHUB_STEP_SUMMARY" || true
+          echo "" >> "$GITHUB_STEP_SUMMARY"
+          cat docs/generated/fault-response-report.md >> "$GITHUB_STEP_SUMMARY" || true
+      - name: Upload evidence
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: verification-evidence
+          path: |
+            reports/
+            docs/generated/
+            ui/playwright-report/
+            ui/coverage/lcov-report/
+
+  sanitizers:
+    name: Firmware under ASan + UBSan
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ninja-build libgtest-dev
+      - run: |
+          cmake -S . -B build -G Ninja -DCMAKE_BUILD_TYPE=Debug -DPUMP_SANITIZE=ON
+          cmake --build build
+      - run: ./build/firmware/pump_tests
+        env:
+          UBSAN_OPTIONS: halt_on_error=1:print_stacktrace=1
+
+  clang:
+    name: Firmware with Clang
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v4
+      - run: sudo apt-get update && sudo apt-get install -y --no-install-recommends ninja-build libgtest-dev clang
+      - run: |
+          cmake -S . -B build -G Ninja -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_BUILD_TYPE=Release
+          cmake --build build
+          ./build/firmware/pump_tests

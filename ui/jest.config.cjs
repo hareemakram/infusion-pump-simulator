@@ -9,5 +9,5 @@ module.exports = {
   moduleNameMapper: { '\\.(css)$': 'identity-obj-proxy', '^@fontsource/.*$': 'identity-obj-proxy' },
   collectCoverageFrom: ['src/**/*.{ts,tsx}', '!src/main.tsx', '!src/**/*.d.ts', '!src/setupTests.ts', '!src/test/**'],
   coverageReporters: ['text-summary', 'lcov', 'json-summary'],
-  reporters: ['default'],
+  reporters: ['default', ['jest-junit', { outputDirectory: '../reports', outputName: 'jest-junit.xml', titleTemplate: '{title}', classNameTemplate: '{classname}', ancestorSeparator: ' › ' }]],
 };

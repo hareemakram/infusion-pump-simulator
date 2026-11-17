@@ -42,7 +42,7 @@ async function primeAndStart(page: Page) {
 }
 
 test.describe('infusion workflow @touch', () => {
-  test('program, prime, confirm and start an infusion', async ({ page }) => {
+  test('program, prime, confirm and start an infusion (SRS-010, SRS-080, SRS-083)', async ({ page }) => {
     await resetSim(page);
     await program(page, /Heparin/, '10', '250');
     // Start is blocked until the line is primed (SRS-010).
@@ -56,7 +56,7 @@ test.describe('infusion workflow @touch', () => {
   });
 });
 
-test('cancelling the start confirmation does not start delivery', async ({ page }) => {
+test('cancelling the start confirmation does not start delivery (SRS-080)', async ({ page }) => {
   await resetSim(page);
   await program(page, /Sodium chloride/, '100', '50');
   await setSpeed(page, 20);
@@ -68,7 +68,7 @@ test('cancelling the start confirmation does not start delivery', async ({ page 
   await expect(page.getByTestId('state-chip')).toHaveAttribute('data-state', 'READY');
 });
 
-test('hard dose limit cannot be passed, soft limit needs an override', async ({ page }) => {
+test('hard dose limit cannot be passed, soft limit needs an override (SRS-003, SRS-004)', async ({ page }) => {
   await resetSim(page);
   await page.locator('[data-action=program]').click();
   await page.getByRole('button', { name: /Heparin/ }).click();
@@ -90,7 +90,7 @@ test('hard dose limit cannot be passed, soft limit needs an override', async ({ 
   await expect(page.locator('.log')).toContainText('operator confirmed');
 });
 
-test('occlusion raises a high-priority alarm that needs acknowledging', async ({ page }) => {
+test('occlusion raises a high-priority alarm that needs acknowledging (SRS-013, SRS-043, SRS-081)', async ({ page }) => {
   await resetSim(page);
   await program(page, /Sodium chloride/, '200', '500');
   await primeAndStart(page);
@@ -118,7 +118,7 @@ test('occlusion raises a high-priority alarm that needs acknowledging', async ({
   await expect(page.getByTestId('alarm-banner')).toHaveCount(0);
 });
 
-test('alarm priorities are distinct: low, medium and high', async ({ page }) => {
+test('alarm priorities are distinct: low, medium and high (SRS-040, SRS-081)', async ({ page }) => {
   await resetSim(page);
   await program(page, /Sodium chloride/, '480', '5');
   await primeAndStart(page);
@@ -141,7 +141,7 @@ test('alarm priorities are distinct: low, medium and high', async ({ page }) => 
   await expect(page.getByTestId('alarm-banner')).toHaveAttribute('role', 'alert');
 });
 
-test('sensor fault forces a restart', async ({ page }) => {
+test('sensor fault forces a restart (SRS-053)', async ({ page }) => {
   await resetSim(page);
   await program(page, /Sodium chloride/, '100', '100');
   await primeAndStart(page);
@@ -153,7 +153,7 @@ test('sensor fault forces a restart', async ({ page }) => {
   await expect(page.getByTestId('state-chip')).toHaveAttribute('data-state', 'IDLE');
 });
 
-test('sensor link dropout stops the pump with a restart-required alarm', async ({ page }) => {
+test('sensor link dropout stops the pump with a restart-required alarm (SRS-052)', async ({ page }) => {
   await resetSim(page);
   await program(page, /Sodium chloride/, '100', '100');
   await primeAndStart(page);

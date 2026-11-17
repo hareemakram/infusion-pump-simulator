@@ -126,7 +126,7 @@ describe('usePump', () => {
     expect(result.current.link).toBe('live');
   });
 
-  it('reports a stale link when the service is unreachable', async () => {
+  it('reports a stale link when the service is unreachable (SRS-082)', async () => {
     (api.state as jest.Mock).mockRejectedValue(new Error('down'));
     const { result } = renderHook(() => usePump());
     await act(async () => { await Promise.resolve(); await Promise.resolve(); });

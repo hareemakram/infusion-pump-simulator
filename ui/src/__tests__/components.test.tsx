@@ -27,7 +27,7 @@ describe('AlarmBanner', () => {
     expect(container).toBeEmptyDOMElement();
   });
 
-  it('shows the highest priority alarm as an assertive alert with text, not colour alone', () => {
+  it('shows the highest priority alarm as an assertive alert with text, not colour alone (SRS-081)', () => {
     render(<AlarmBanner alarms={[low, occl]} audible silenceMs={0} onSilence={jest.fn()} onAcknowledge={jest.fn()} />);
     const banner = screen.getByRole('alert');
     expect(banner).toHaveAttribute('data-priority', 'HIGH');
@@ -129,7 +129,7 @@ describe('ProgramWizard', () => {
 describe('PumpScreen', () => {
   const props = { drugs: DRUGS, libraryVersion: 'DL-test', link: 'live' as const, onStatus: jest.fn() };
 
-  it('asks for confirmation before starting and only then sends START (UE-03)', async () => {
+  it('asks for confirmation before starting and only then sends START (SRS-080)', async () => {
     const user = userEvent.setup();
     command.mockResolvedValue(ok(infusing()));
     const ready = infusing({ state: 'READY', motor_enabled: false, infused: 0 });
@@ -142,7 +142,7 @@ describe('PumpScreen', () => {
     expect(command).toHaveBeenCalledWith('START', {});
   });
 
-  it('cancelling the start confirmation sends nothing', async () => {
+  it('cancelling the start confirmation sends nothing (SRS-080)', async () => {
     const user = userEvent.setup();
     render(<PumpScreen status={infusing({ state: 'READY', motor_enabled: false })} {...props} />);
     await user.click(screen.getByRole('button', { name: /^Start/ }));
@@ -151,7 +151,7 @@ describe('PumpScreen', () => {
     expect(command).not.toHaveBeenCalled();
   });
 
-  it('shows whether the pump is delivering', () => {
+  it('shows whether the pump is delivering (SRS-083)', () => {
     const { rerender } = render(<PumpScreen status={infusing()} {...props} />);
     expect(screen.getByTestId('rate-display')).toHaveTextContent('Delivering');
     rerender(<PumpScreen status={infusing({ state: 'PAUSED', motor_enabled: false })} {...props} />);
@@ -166,7 +166,7 @@ describe('PumpScreen', () => {
     expect(command).toHaveBeenCalledWith('PAUSE', {});
   });
 
-  it('ending an infusion needs confirmation', async () => {
+  it('ending an infusion needs confirmation (SRS-014)', async () => {
     const user = userEvent.setup();
     command.mockResolvedValue(ok());
     render(<PumpScreen status={infusing({ state: 'PAUSED', motor_enabled: false })} {...props} />);
@@ -213,7 +213,7 @@ describe('PumpScreen', () => {
     expect(command).toHaveBeenCalledWith('RESET', {});
   });
 
-  it('greys out values when the data link is stale', () => {
+  it('greys out values when the data link is stale (SRS-082)', () => {
     render(<PumpScreen status={infusing()} {...props} link="stale" />);
     expect(screen.getByText('No data from the pump')).toBeInTheDocument();
   });
