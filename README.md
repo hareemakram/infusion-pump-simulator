@@ -1,6 +1,6 @@
 # IPS-1 Infusion Pump Simulator
 
-[![CI](https://github.com/Hareem2024/infusion-pump-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/Hareem2024/infusion-pump-simulator/actions/workflows/ci.yml)
+[![CI](https://github.com/hareemakram/infusion-pump-simulator/actions/workflows/ci.yml/badge.svg)](https://github.com/hareemakram/infusion-pump-simulator/actions/workflows/ci.yml)
 
 A volumetric infusion pump built the way regulated medical software is built. The **C++
 control firmware** handles flow, dose limits and alarms. A **Python hardware simulator** plays
